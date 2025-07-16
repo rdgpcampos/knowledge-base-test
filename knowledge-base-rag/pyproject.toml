@@ -1,0 +1,23 @@
+[project]
+name = "knowledge-base-rag"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "rdgpcampos",email = "rdgpcampos@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "openai (>=1.96.1,<2.0.0)",
+    "qdrant-client (>=1.14.3,<2.0.0)",
+    "python-dotenv (>=1.1.1,<2.0.0)",
+    "tiktoken (>=0.9.0,<0.10.0)"
+]
+
+[tool.poetry]
+packages = [{include = "knowledge_base_rag", from = "src"}]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
