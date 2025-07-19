@@ -20,12 +20,14 @@ def main():
         
         if message.strip():
             message_with_type = rag.feedback_or_query(message)
+            print(f"MESSAGE TYPE: {message_with_type['type']}")
             if message_with_type["type"] == MessageType.QUERY:
                 answer = rag.query_with_rag(message)
                 print(f"Answer: {answer}")
             elif message_with_type["type"] == MessageType.FEEDBACK:
                 update_manifest(message)
             else:
+                print(MessageType.FEEDBACK)
                 answer = rag.query_with_rag(message)
                 print(f"Answer: {answer}")
     

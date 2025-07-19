@@ -1,6 +1,6 @@
 import os
 import glob
-from enum import Enum
+from enum import StrEnum, auto
 import json
 from typing import List, Dict, Any
 from pathlib import Path
@@ -14,10 +14,10 @@ import uuid
 # Load environment variables
 load_dotenv()
 
-class MessageType(Enum):
-    QUERY = "query"
-    FEEDBACK = "feedback"
-    OTHER = "other"
+class MessageType(StrEnum):
+    QUERY = auto()
+    FEEDBACK = auto()
+    OTHER = auto()
 
 class RAGSystem:
     def __init__(self, qdrant_host: str = "localhost", qdrant_port: int = 6333):
@@ -147,7 +147,7 @@ class RAGSystem:
 
     def feedback_or_query(self, message: str) -> Dict[str, str]:
         """Determine if a user message is a query or a feedback"""
-        prompt = """
+        prompt = f"""
 Analyze if the following message is a feedback or a query.
 
 # MESSAGE #
@@ -156,37 +156,37 @@ Analyze if the following message is a feedback or a query.
 
 If the message is a feedback, you should edit it to look like a prompt targeted towards LLMs, and your response should follow the JSON structure below:
 
-{
-"type": "feedback",
+{{
+"type": "{MessageType.FEEDBACK}",
 "response": "[message editted as a prompt]"
-}
+}}
 
 If the message is a query, your response should follow the JSON structure below:
-{
-"type": "query",
+{{
+"type": "{MessageType.QUERY}",
 "response": "[message as-is]"
-}
+}}
 
 If the message is neither a query nor a feedback, your response should follow the JSON structure below:
 
-{
-"type": "unknown",
+{{
+"type": "{MessageType.OTHER}",
 "response": "[message as-is]"
-}
+}}
 
-""".format(message=message)
+"""
         
         response = self.openai_client.chat.completions.create(
                 model=self.chat_model,
                 messages=[
-                    {"content": prompt}
+                    {"role": "user","content": prompt}
                 ],
                 max_tokens=500,
                 temperature=0.1
             )
         
         try:
-            response_json = json.loads(response)
+            response_json = json.loads(response.choices[0].message.content)
             return response_json
 
         except Exception as e:
@@ -233,7 +233,7 @@ If the message is neither a query nor a feedback, your response should follow th
             response = self.openai_client.chat.completions.create(
                 model=self.chat_model,
                 messages=[
-                    {"content": prompt}
+                    {"role": "user","content": prompt}
                 ],
                 max_tokens=500,
                 temperature=0.1
