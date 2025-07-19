@@ -3,7 +3,7 @@
 Example usage of the RAG system
 """
 
-from rag.rag import RAGSystem
+from src.rag.rag import RAGSystem
 
 def main():
     # Initialize the RAG system

@@ -1,5 +1,7 @@
 import os
 import glob
+from enum import Enum
+import json
 from typing import List, Dict, Any
 from pathlib import Path
 import tiktoken
@@ -11,6 +13,11 @@ import uuid
 
 # Load environment variables
 load_dotenv()
+
+class MessageType(Enum):
+    QUERY = "query"
+    FEEDBACK = "feedback"
+    OTHER = "other"
 
 class RAGSystem:
     def __init__(self, qdrant_host: str = "localhost", qdrant_port: int = 6333):
@@ -136,6 +143,61 @@ class RAGSystem:
         
         return results
     
+
+
+    def feedback_or_query(self, question: str) -> str:
+        prompt = """
+Analyze if the following message is a feedback or a query.
+
+# MESSAGE #
+{question}
+##########
+
+If the message is a feedback, you should edit it to look like a prompt targeted towards LLMs, and your response should follow the JSON structure below:
+
+{
+"type": "feedback",
+"response": "[message editted as a prompt]"
+}
+
+If the message is a query, your response should follow the JSON structure below:
+{
+"type": "query",
+"response": "[message as-is]"
+}
+
+If the message is neither a query nor a feedback, your response should follow the JSON structure below:
+
+{
+"type": "unknown",
+"response": "[message as-is]"
+}
+
+""".format(question=question)
+        
+        response = self.openai_client.chat.completions.create(
+                model=self.chat_model,
+                messages=[
+                    {"content": prompt}
+                ],
+                max_tokens=500,
+                temperature=0.1
+            )
+        
+        try:
+            response_json = json.loads(response)
+            if not response_json["type"]:
+                return MessageType.OTHER
+            if response_json["type"] == MessageType.QUERY:
+                return MessageType.QUERY
+            elif response_json["type"] == MessageType.FEEDBACK:
+                return MessageType.FEEDBACK
+            else:
+                return MessageType.OTHER
+
+        except Exception as e:
+            print("Could not determine the type of message")
+    
     def query_with_rag(self, question: str, max_context_length: int = 3000) -> str:
         """Query using RAG: retrieve relevant chunks and generate answer."""
         # Search for relevant chunks
@@ -161,21 +223,22 @@ class RAGSystem:
         context = "\n\n".join(context_pieces)
         
         # Generate answer using OpenAI
-        prompt = f"""Based on the following context, please answer the question. If the context doesn't contain enough information to answer the question, say so.
-
-Context:
-{context}
-
-Question: {question}
-
-Answer:"""
+        try:
+            dirname = os.path.dirname(__file__)
+            manifest_path = os.path.join(dirname, "../../../manifest/manifest.txt")
+            with open(manifest_path, "r", encoding="utf-8") as manifest_file:
+                manifest = manifest_file.read()
+        except Exception as e:
+            print(f"Failed to read manifest: {e}")
+            raise e
+        
+        prompt = manifest.format(information=context,query=question)
         
         try:
             response = self.openai_client.chat.completions.create(
                 model=self.chat_model,
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant that answers questions based on the provided context. Be concise and accurate."},
-                    {"role": "user", "content": prompt}
+                    {"content": prompt}
                 ],
                 max_tokens=500,
                 temperature=0.1
