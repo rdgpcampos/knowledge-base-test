@@ -145,12 +145,13 @@ class RAGSystem:
     
 
 
-    def feedback_or_query(self, question: str) -> str:
+    def feedback_or_query(self, message: str) -> Dict[str, str]:
+        """Determine if a user message is a query or a feedback"""
         prompt = """
 Analyze if the following message is a feedback or a query.
 
 # MESSAGE #
-{question}
+{message}
 ##########
 
 If the message is a feedback, you should edit it to look like a prompt targeted towards LLMs, and your response should follow the JSON structure below:
@@ -173,7 +174,7 @@ If the message is neither a query nor a feedback, your response should follow th
 "response": "[message as-is]"
 }
 
-""".format(question=question)
+""".format(message=message)
         
         response = self.openai_client.chat.completions.create(
                 model=self.chat_model,
@@ -186,17 +187,11 @@ If the message is neither a query nor a feedback, your response should follow th
         
         try:
             response_json = json.loads(response)
-            if not response_json["type"]:
-                return MessageType.OTHER
-            if response_json["type"] == MessageType.QUERY:
-                return MessageType.QUERY
-            elif response_json["type"] == MessageType.FEEDBACK:
-                return MessageType.FEEDBACK
-            else:
-                return MessageType.OTHER
+            return response_json
 
         except Exception as e:
-            print("Could not determine the type of message")
+            print(f"Could not determine the type of message: {e}")
+            return {"type": MessageType.OTHER, "response": message}
     
     def query_with_rag(self, question: str, max_context_length: int = 3000) -> str:
         """Query using RAG: retrieve relevant chunks and generate answer."""

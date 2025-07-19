@@ -3,45 +3,31 @@
 Example usage of the RAG system
 """
 
-from src.rag.rag import RAGSystem
+from src.rag.rag import RAGSystem, MessageType
+from src.utils.manifest_update_handler import update_manifest
 
 def main():
     # Initialize the RAG system
     rag = RAGSystem(qdrant_host="localhost", qdrant_port=6333)
-    
-    # Index files from a specific directory
-    print("Indexing text files...")
-    rag.index_files("/Users/rodrigocampos/knowledge-base-rag/documents/*.txt")  # Adjust path as needed
-    
-    # Or index files from current directory
-    # rag.index_files("*.txt")
-    
-    # Example queries
-    queries = [
-        "What is the main topic discussed in the documents?",
-        "Can you summarize the key points?",
-        "What are the important dates mentioned?",
-    ]
-    
-    for query in queries:
-        print(f"\nQuery: {query}")
-        answer = rag.query_with_rag(query)
-        print(f"Answer: {answer}")
-        print("-" * 50)
-    
-    # Interactive mode
-    print("\n" + "="*50)
-    print("Interactive mode - Enter your questions:")
+
+    print("Enter your questions:")
     
     while True:
-        question = input("\nYour question (or 'quit' to exit): ")
+        message = input("\nYour question (or 'quit' to exit): ")
         
-        if question.lower() in ['quit', 'exit', 'q']:
+        if message.lower() in ['quit', 'exit', 'q']:
             break
         
-        if question.strip():
-            answer = rag.query_with_rag(question)
-            print(f"Answer: {answer}")
+        if message.strip():
+            message_with_type = rag.feedback_or_query(message)
+            if message_with_type["type"] == MessageType.QUERY:
+                answer = rag.query_with_rag(message)
+                print(f"Answer: {answer}")
+            elif message_with_type["type"] == MessageType.FEEDBACK:
+                update_manifest(message)
+            else:
+                answer = rag.query_with_rag(message)
+                print(f"Answer: {answer}")
     
     print("Goodbye!")
 
