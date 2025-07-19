@@ -192,6 +192,53 @@ If the message is neither a query nor a feedback, your response should follow th
         except Exception as e:
             print(f"Could not determine the type of message: {e}")
             return {"type": MessageType.OTHER, "response": message}
+        
+    def generate_manifest_change(self, feedback: str) -> str:
+        try:
+            dirname = os.path.dirname(__file__)
+            manifest_path = os.path.join(dirname, "../../../manifest/manifest.txt")
+            with open(manifest_path, "r", encoding="utf-8") as manifest_file:
+                manifest = manifest_file.read()
+        except Exception as e:
+            print(f"Failed to read manifest: {e}")
+            raise e
+        
+        prompt = f"""
+You are an AI assistant specialized in modifying text documents according to user feedback.
+
+Your task is to modify a document according to user feedback, while maintaining the document's overall structure.
+
+The document below is a prompt that will be sent to an LLM. 
+------
+{manifest}
+------
+Your response should be in text format, including only the background information that you were provided.
+
+
+The feedback below should be used to modify the document.
+------
+{feedback}
+------
+
+Modify the document according to the user feedback.
+Do not remove or add any text enclosed by curly braces.
+
+Your response should be simply the modified document.
+        """
+        try:
+            response = self.openai_client.chat.completions.create(
+                model=self.chat_model,
+                messages=[
+                    {"role": "user","content": prompt}
+                ],
+                max_tokens=500,
+                temperature=0.1
+            )
+            
+            return response.choices[0].message.content
+        except Exception as e:
+            return f"Error generating response: {e}"
+
     
     def query_with_rag(self, question: str, max_context_length: int = 3000) -> str:
         """Query using RAG: retrieve relevant chunks and generate answer."""
