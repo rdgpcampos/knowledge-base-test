@@ -1,3 +1,5 @@
 knowledge-base-rag/.env
 knowledge-base-rag/.env*
 documents/*
+__pycache__/
+*.pyc
