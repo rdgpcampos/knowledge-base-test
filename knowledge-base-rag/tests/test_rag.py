@@ -25,7 +25,7 @@ def main():
                 answer = rag.query_with_rag(message)
                 print(f"Answer: {answer}")
             elif message_with_type["type"] == MessageType.FEEDBACK:
-                update_manifest(message)
+                update_manifest(rag, message)
             else:
                 print(MessageType.FEEDBACK)
                 answer = rag.query_with_rag(message)
