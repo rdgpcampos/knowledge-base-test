@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-"""
-Example usage of the RAG system
-"""
 
-from src.rag.rag import RAGSystem
+import os
+
+from src.rag.vector_db_providers.init_vector_db import init_vector_db
 
 def main():
-    # Initialize the RAG system
-    rag = RAGSystem(qdrant_host="localhost", qdrant_port=6333)
+    # Initialize Vector DB Provider
+    vector_db_provider = init_vector_db()
     
     # Index files from a specific directory
     print("Indexing documents...")
-
     try:
-        rag.index_files("/Users/rodrigocampos/knowledge-base-rag/documents/*.txt")  # Adjust path as needed
+        for dirpath, dirnames, _ in os.walk("/Users/rodrigocampos/knowledge-base-rag/documents/"):
+            for dirname in dirnames:
+                vector_db_provider.index_files(dirname,os.path.join(dirpath, dirname,"*.txt"))  # Adjust path as needed
     except Exception as e:
         print(f"Failed to index documents: {e}")
         raise e

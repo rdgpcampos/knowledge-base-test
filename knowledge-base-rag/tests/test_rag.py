@@ -3,12 +3,14 @@
 Example usage of the RAG system
 """
 
-from src.rag.rag import RAGSystem, MessageType
+from src.rag.rag import QueryController, MessageType
+from src.rag.vector_db_providers.init_vector_db import init_vector_db
 from src.utils.manifest_update_handler import update_manifest
 
 def main():
     # Initialize the RAG system
-    rag = RAGSystem(qdrant_host="localhost", qdrant_port=6333)
+    vector_db_provider = init_vector_db()
+    rag = QueryController(vector_db_provider)
 
     print("Enter your questions:")
     
