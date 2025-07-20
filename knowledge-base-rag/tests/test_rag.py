@@ -89,8 +89,6 @@ def main():
     vector_db_provider = init_vector_db()
     rag = QueryController(vector_db_provider)
     
-    # If a specific category was selected, you might want to configure the RAG system
-    # to focus on that category. This would depend on your RAG implementation.
     if selected_category:
         print(f"RAG system configured for category: {selected_category}")
         # TODO: Configure RAG to focus on selected_category if your system supports it
@@ -129,13 +127,13 @@ def main():
                 print(f"MESSAGE TYPE: {message_with_type['type']}")
                 
                 if message_with_type["type"] == MessageType.QUERY:
-                    answer = rag.query_with_rag(message)
+                    answer = rag.query_with_rag(selected_category, message)
                     print(f"Answer: {answer}")
                 elif message_with_type["type"] == MessageType.FEEDBACK:
                     update_manifest(rag, message)
                 else:
                     print(MessageType.FEEDBACK)
-                    answer = rag.query_with_rag(message)
+                    answer = rag.query_with_rag(selected_category, message)
                     print(f"Answer: {answer}")
                     
             except Exception as e:
