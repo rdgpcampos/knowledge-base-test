@@ -1,3 +1,10 @@
+"""
+Query controller that processes user messages
+The QueryController class is agnostic to the vector db provider,
+so changing the vector db provider should not affect the behavior of this class
+as long as the vector db provider correctly implements the VectorDBProvider interface
+"""
+
 import os
 from enum import StrEnum, auto
 import json

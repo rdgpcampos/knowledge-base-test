@@ -1,3 +1,7 @@
+"""
+Defining Qdrant as a VectorDBProvider implementation
+"""
+
 import os
 import glob
 import uuid
@@ -5,7 +9,7 @@ from typing import List, Dict, Any
 from pathlib import Path
 import tiktoken
 from openai import OpenAI
-from qdrant_client import QdrantClient
+from qdrant_client import QdrantClient, models
 from qdrant_client.models import PointStruct
 from dotenv import load_dotenv
 from . import VectorDBProvider
@@ -101,7 +105,7 @@ class Qdrant(VectorDBProvider):
             )
             print(f"Successfully indexed {len(points)} chunks")
     
-    def search_similar(self, query: str, limit: int = 5) -> List[Dict[str, Any]]:
+    def search_similar(self, tag: str, query: str, limit: int = 5) -> List[Dict[str, Any]]:
         """Search for similar text chunks."""
         query_embedding = self._get_embedding(query)
         
@@ -109,7 +113,15 @@ class Qdrant(VectorDBProvider):
             collection_name=self.collection_name,
             query_vector=query_embedding,
             limit=limit,
-            with_payload=True
+            with_payload=True,
+            query_filter=models.Filter(
+            must=[
+                models.FieldCondition(
+                    key="tag",
+                    match=models.MatchValue(value=tag)
+                )
+            ]
+        )
         )
         
         results = []
