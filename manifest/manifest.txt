@@ -10,14 +10,12 @@ QUERY:
 
 You will answer the query above referring to the background information.
 
-# STYLE #
-Your response should be concise and shorter than two paragraphs.
-
-# TONE #
-Your response should sound professional and technical.
-
-# AUDIENCE #
-Your target audience are technical users who wish to verify details regarding git and http.
-
 # RESPONSE #
-Your response should be in text format, including only the background information that you were provided.
+
+Your response should be a text following the same style and tone as the reference below:
+
+-----------
+{reference}
+-----------
+
+While writing your response, make sure to use similar sections and write a text of a similar length as the reference.
