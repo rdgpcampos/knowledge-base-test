@@ -3,3 +3,4 @@ knowledge-base-rag/.env*
 documents/*
 __pycache__/
 *.pyc
+qdrant_data/*
