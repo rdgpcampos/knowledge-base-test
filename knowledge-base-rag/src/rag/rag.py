@@ -144,10 +144,10 @@ Your response should be simply the modified document.
             return f"Error generating response: {e}"
 
     
-    def query_with_rag(self, question: str, max_context_length: int = 3000) -> str:
+    def query_with_rag(self, tag: str, question: str, max_context_length: int = 3000) -> str:
         """Query using RAG: retrieve relevant chunks and generate answer."""
         # Search for relevant chunks
-        search_results = self.vector_db_provider.search_similar(question, limit=10)
+        search_results = self.vector_db_provider.search_similar(tag, question, limit=10)
         
         if not search_results:
             return "I couldn't find any relevant information to answer your question."
@@ -174,11 +174,15 @@ Your response should be simply the modified document.
             manifest_path = os.path.join(dirname, "../../../manifest/manifest.txt")
             with open(manifest_path, "r", encoding="utf-8") as manifest_file:
                 manifest = manifest_file.read()
+            
+            reference_path = os.path.join(dirname, "../../../documents",tag,"template.md")
+            with open(reference_path, "r", encoding="utf-8") as reference_file:
+                reference = reference_file.read()
         except Exception as e:
             print(f"Failed to read manifest: {e}")
             raise e
         
-        prompt = manifest.format(information=context,query=question)
+        prompt = manifest.format(information=context,query=question, reference=reference)
         
         try:
             response = self.openai_client.chat.completions.create(

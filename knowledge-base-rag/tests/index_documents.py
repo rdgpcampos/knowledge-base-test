@@ -32,7 +32,7 @@ def main():
     # Index files from a specific directory
     print("Indexing documents...")
     try:
-        for dirpath, dirnames, _ in os.walk("/Users/rodrigocampos/knowledge-base-rag/documents/"):
+        for dirpath, dirnames, _ in os.walk("/Users/rodrigocampos/knowledge-base-test/documents/"):
             for dirname in dirnames:
                 vector_db_provider.index_files(dirname,os.path.join(dirpath, dirname,"*.txt"))  # Adjust path as needed
     except Exception as e:
