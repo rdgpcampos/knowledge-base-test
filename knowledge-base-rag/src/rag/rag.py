@@ -149,12 +149,27 @@ class RAGSystem:
         """Determine if a user message is a query or a feedback"""
         prompt = f"""
 Analyze if the following message is a feedback or a query.
+Use the definitions below to know how to differentiate between the two:
+- Query: 
+    A question where the user wants to know some type of information.
+- Feedback: 
+    A comment where the user instructs you on how to improve the quality of your responses. 
+    Sometimes this can come in the form of a question, where the user is politely asking if you can improve your responses in a given way.
+
+Examples:
+You should make your responses longer - feedback
+What is the capital of France? - query
+What is the difference between a neutron and a proton? - query
+Can you include citations in your responses? - feedback
+
+If you don't know whether the message is a feedback or a query, classify it as 'Other'.
 
 # MESSAGE #
 {message}
 ##########
 
 If the message is a feedback, you should edit it to look like a prompt targeted towards LLMs, and your response should follow the JSON structure below:
+When editting the message to make it look like a prompt, make sure that the message is specific, direct, and concise.
 
 {{
 "type": "{MessageType.FEEDBACK}",
@@ -221,6 +236,7 @@ The feedback below should be used to modify the document.
 ------
 
 Modify the document according to the user feedback.
+If the feedback enters in contradiction with some part of the document, favor the feedback over the contradicting part.
 Do not remove or add any text enclosed by curly braces.
 
 Your response should be simply the modified document.

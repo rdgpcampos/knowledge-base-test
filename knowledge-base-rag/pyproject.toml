@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [tool.poetry]
-packages = [{include = "rag", from = "src"}]
+packages = [{include = "src"}, {include = "tests"}]
 
 
 [build-system]
